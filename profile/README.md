@@ -116,48 +116,35 @@ A claim is only as strong as the reproducible evidence chain behind it. Infrastr
 
 ## Public starting points
 
-<table>
-<tr>
-<td width="50%" valign="top">
-
 ### AI-Powered Infrastructure-as-a-Product
 
-The public architecture and strategy front door: thesis, reference architecture, governance, product model, roadmap context, modernization position, and sanitized evidence.
+**Start with the architecture and strategy.** This is the public front door for the thesis, reference architecture, governance model, product model, roadmap context, modernization position, and sanitized portfolio evidence.
 
-**[Open the repository →](https://github.com/InfrastructureProductWorks/ai-powered-infrastructure-as-a-product)**
+**[Open AI-Powered Infrastructure-as-a-Product →](https://github.com/InfrastructureProductWorks/ai-powered-infrastructure-as-a-product)**
 
-</td>
-<td width="50%" valign="top">
+<br/>
 
 ### IaaP Guard™
 
-The supported GitHub-native architecture and evidence guard. Deterministic checks evaluate whether infrastructure is actually being designed and governed as a product.
+**See the product discipline in action.** IaaP Guard is the supported GitHub-native architecture and evidence guard. Deterministic checks evaluate whether infrastructure is actually being designed and governed as a product.
 
 **[Open IaaP Guard →](https://github.com/InfrastructureProductWorks/iaap-guard)**
 
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
+<br/>
 
 ### Enterprise Azure Governance
 
-Enterprise governance patterns and reference work supporting policy, platform, and cloud-control thinking.
+**Explore enterprise cloud-governance depth.** This repository contains governance patterns and reference work supporting policy, platform, architecture, and cloud-control thinking.
 
-**[Open the repository →](https://github.com/InfrastructureProductWorks/enterprise-azure-governance)**
+**[Open Enterprise Azure Governance →](https://github.com/InfrastructureProductWorks/enterprise-azure-governance)**
 
-</td>
-<td width="50%" valign="top">
+<br/>
 
-### Portfolio architecture
+### Explore the portfolio
 
-Private and internal repositories hold bounded implementation, assurance, integration, and product-development work. Public repositories carry the architecture, supported public products, sanitized evidence, and claim boundaries.
+Private and internal repositories hold bounded implementation, assurance, integration, and product-development work. Public repositories carry the architecture, supported public products, sanitized evidence, and explicit claim boundaries.
 
-**[Explore the organization →](https://github.com/InfrastructureProductWorks?tab=repositories)**
-
-</td>
-</tr>
-</table>
+**[Explore all public Infrastructure Product Works repositories →](https://github.com/InfrastructureProductWorks?tab=repositories)**
 
 ---
 
