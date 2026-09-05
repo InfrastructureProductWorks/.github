@@ -6,6 +6,8 @@
 
 <p align="center"><strong>IaaS is what we buy; Infrastructure-as-a-Product is what we build.</strong></p>
 
+<p align="center"><strong>We productize infrastructure with AI — without turning AI into the authority boundary.</strong></p>
+
 <p align="center">
 Governed infrastructure products for regulated enterprises.<br/>
 Deterministic policy • bounded AI • multi-cloud control • human authority • verifiable evidence
@@ -16,6 +18,30 @@ Deterministic policy • bounded AI • multi-cloud control • human authority 
   &nbsp;•&nbsp;
   <a href="https://github.com/InfrastructureProductWorks/iaap-guard"><strong>View IaaP Guard</strong></a>
 </p>
+
+---
+
+## Productizing infrastructure with AI
+
+Infrastructure Product Works is centered on a simple idea: **AI should make infrastructure easier to consume as a governed product, not make infrastructure less controlled.**
+
+The aim is not to bolt a chatbot onto Infrastructure-as-Code. The aim is to use bounded AI across the infrastructure-product lifecycle so teams can move from intent to a governed product outcome with less manual assembly and less provider-specific friction.
+
+AI can help:
+
+- interpret product intent and translate it into structured requirements;
+- propose product selections and bounded changes;
+- explain architecture and policy decisions in plain language;
+- identify gaps, material changes, and evidence needs;
+- generate candidate infrastructure-product artifacts and implementation proposals;
+- diagnose sanitized lifecycle state and assemble evidence;
+- support progressive modernization by helping teams reason about target-state infrastructure products.
+
+But AI does **not** become the system of authority. Stable product contracts, deterministic validation, policy, tests, source control, human approval, platform controls, IAM, reconciliation, and evidence remain the governing boundaries.
+
+> **AI accelerates the product lifecycle. Deterministic controls and authorized people govern it.**
+
+That is the core Infrastructure Product Works position: **productize infrastructure with AI, then bind that intelligence to explicit contracts, policy, evidence, and authority.**
 
 ---
 
@@ -39,6 +65,7 @@ Developers should order an infrastructure outcome through a stable product contr
 flowchart LR
     DEV[Developer / Product Team]
     EXP[Storefront • API • CLI • Conversation]
+    AI[Bounded AI\nintent • proposals • explanation • diagnosis]
     GUARD[IaaP Guard™\nDeterministic architecture + evidence]
     HUMAN[Authorized Human Review]
     FORGE[IaaP Forge™\nBounded product proposal]
@@ -47,7 +74,8 @@ flowchart LR
     ASSURE[IaaP Assurance™\nAuthority • Custody • Continuous Assurance]
 
     DEV --> EXP
-    EXP --> GUARD
+    EXP --> AI
+    AI --> GUARD
     GUARD --> HUMAN
     HUMAN --> FORGE
     FORGE --> CONTROL
@@ -55,14 +83,17 @@ flowchart LR
     GUARD --> ASSURE
     FORGE --> ASSURE
     CLOUD --> ASSURE
+    ASSURE --> AI
 
     classDef experience fill:#0D2438,stroke:#38BDF8,stroke-width:2px,color:#F8FAFC
+    classDef intelligence fill:#26163F,stroke:#A855F7,stroke-width:2px,color:#F8FAFC
     classDef guard fill:#0B2F2D,stroke:#14B8A6,stroke-width:2px,color:#F8FAFC
     classDef authority fill:#3B2010,stroke:#FB923C,stroke-width:2px,color:#F8FAFC
     classDef forge fill:#26163F,stroke:#A855F7,stroke-width:2px,color:#F8FAFC
     classDef control fill:#10294B,stroke:#3B82F6,stroke-width:2px,color:#F8FAFC
     classDef assurance fill:#35132D,stroke:#EC4899,stroke-width:2px,color:#F8FAFC
     class DEV,EXP experience
+    class AI intelligence
     class GUARD guard
     class HUMAN authority
     class FORGE forge
@@ -70,7 +101,7 @@ flowchart LR
     class ASSURE assurance
 ```
 
-The architecture deliberately separates **experience, validation, approval, generation, reconciliation, and assurance**. AI can interpret, propose, explain, diagnose, and assemble evidence — but deterministic controls and authorized people remain the decision boundary.
+The architecture deliberately separates **experience, intelligence, validation, approval, generation, reconciliation, and assurance**. AI can interpret, propose, explain, diagnose, and assemble evidence — but deterministic controls and authorized people remain the decision boundary.
 
 ---
 
@@ -78,7 +109,7 @@ The architecture deliberately separates **experience, validation, approval, gene
 
 | Product / capability | Responsibility | Public posture |
 |---|---|---|
-| **AI-Powered Infrastructure-as-a-Product** | Thesis, reference architecture, governance model, roadmap context, and sanitized portfolio evidence | **Public** |
+| **AI-Powered Infrastructure-as-a-Product** | Thesis, reference architecture, AI productization model, governance model, roadmap context, and sanitized portfolio evidence | **Public** |
 | **IaaP Guard™** | GitHub-native deterministic architecture and evidence guard | **Public** |
 | **IaaP Forge™** | Converts accepted intent and evidence into bounded infrastructure-product proposals and lifecycle artifacts | Private implementation |
 | **IaaP Console™** | Customer-hosted assessment, evidence, planning, selection, and lifecycle experience | Private implementation |
@@ -95,6 +126,7 @@ The architecture deliberately separates **experience, validation, approval, gene
 
 | Principle | What it means in practice |
 |---|---|
+| **AI productizes infrastructure** | AI helps transform intent, context, and evidence into governed infrastructure-product decisions and proposals instead of merely generating raw IaC. |
 | **Product contract first** | Consumers depend on a stable infrastructure product interface — not a Terraform workspace, provider implementation, portal, module, or pipeline. |
 | **Deterministic gates before AI authority** | AI can assist the lifecycle, but schemas, policy, tests, evidence, and authorized human approval decide what is valid. |
 | **Multi-cloud by contract** | Provider-specific implementations remain replaceable behind stable product contracts rather than leaking into the consumer boundary. |
@@ -118,7 +150,7 @@ A claim is only as strong as the reproducible evidence chain behind it. Infrastr
 
 ### AI-Powered Infrastructure-as-a-Product
 
-**Start with the architecture and strategy.** This is the public front door for the thesis, reference architecture, governance model, product model, roadmap context, modernization position, and sanitized portfolio evidence.
+**Start with the architecture and strategy.** This is the public front door for the thesis, reference architecture, AI productization model, governance model, product model, roadmap context, modernization position, and sanitized portfolio evidence.
 
 **[Open AI-Powered Infrastructure-as-a-Product →](https://github.com/InfrastructureProductWorks/ai-powered-infrastructure-as-a-product)**
 
@@ -156,7 +188,15 @@ The intended destination is not a prettier legacy runtime. The goal is **measura
   <img src="https://raw.githubusercontent.com/InfrastructureProductWorks/ai-powered-infrastructure-as-a-product/main/docs/assets/showcase/progressive-legacy-modernization.svg" alt="Progressive legacy modernization through governed infrastructure products" width="96%"/>
 </p>
 
-Infrastructure Product Works therefore supports a staged model: **stabilize → coexist → transfer → retire**. Application teams remain responsible for business meaning, data migration, equivalence, cutover, and retirement decisions; the infrastructure-product system provides the governed destination and evidence chain.
+Infrastructure Product Works therefore supports a staged model: **stabilize → coexist → transfer → retire**. AI-assisted discovery and transformation may help teams understand and plan the transition, but application and domain teams remain responsible for business meaning, data migration, equivalence, cutover, and retirement decisions. The infrastructure-product system provides the governed destination and evidence chain.
+
+---
+
+## Namespace and provenance
+
+**InfrastructureProductWorks** is the canonical current GitHub namespace for this portfolio. Active links, current operating documentation, and supported product references should use this namespace.
+
+Earlier **SAABOLImpactVenture** references may remain where they are part of immutable historical evidence, original release provenance, archived validation records, or migration continuity. Those references document origin; they do not define the current portfolio identity.
 
 ---
 
@@ -171,6 +211,7 @@ The portfolio contains supported public software alongside private and internal 
 <details>
 <summary><strong>Design principles in one minute</strong></summary>
 
+- AI helps productize infrastructure rather than acting as an independent infrastructure authority.
 - Stable product contracts outlive provider-specific implementations.
 - Backstage or another experience layer is replaceable.
 - Crossplane is a reference product control plane, not the consumer-facing product boundary.
@@ -184,5 +225,5 @@ The portfolio contains supported public software alongside private and internal 
 
 ---
 
-<h3 align="center">Build infrastructure that behaves like a product.</h3>
+<h3 align="center">Productize infrastructure with AI. Govern it with evidence and authority.</h3>
 <p align="center"><strong>Portable. Governed. Measurable. Provable.</strong></p>
