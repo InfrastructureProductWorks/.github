@@ -1,0 +1,177 @@
+name: Root README link integrity
+
+on:
+  workflow_call:
+  pull_request:
+    paths:
+      - README.md
+      - .github/workflows/root-readme-links.yml
+  push:
+    branches:
+      - main
+    paths:
+      - README.md
+      - .github/workflows/root-readme-links.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate-root-readme-links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate root README links
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import re
+          import sys
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+
+          README = Path("README.md")
+          if not README.is_file():
+              print("ERROR: root README.md is missing")
+              sys.exit(1)
+
+          text = README.read_text(encoding="utf-8")
+          failures = []
+          warnings = []
+
+          def github_slug(value: str) -> str:
+              value = re.sub(r"<[^>]+>", "", value.strip().lower())
+              value = re.sub(r"[`*_~]", "", value)
+              value = "".join(ch for ch in value if ch.isalnum() or ch in " -_")
+              return value.replace(" ", "-")
+
+          anchors = set()
+          seen = {}
+          for line in text.splitlines():
+              match = re.match(r"^#{1,6}\s+(.+?)\s*#*\s*$", line)
+              if not match:
+                  continue
+              base = github_slug(match.group(1))
+              count = seen.get(base, 0)
+              seen[base] = count + 1
+              anchors.add(base if count == 0 else f"{base}-{count}")
+
+          targets = []
+          targets.extend(re.findall(r"!?\[[^\]]*\]\(([^)]+)\)", text))
+          targets.extend(re.findall(r"\b(?:href|src)=[\"']([^\"']+)[\"']", text, flags=re.I))
+
+          def clean_target(raw: str) -> str:
+              raw = raw.strip()
+              if raw.startswith("<") and ">" in raw:
+                  raw = raw[1:raw.index(">")]
+              elif " \"" in raw or " '" in raw:
+                  raw = raw.split(maxsplit=1)[0]
+              return raw.strip()
+
+          def check_local(target: str) -> None:
+              parsed = urllib.parse.urlsplit(target)
+              if parsed.path:
+                  decoded = urllib.parse.unquote(parsed.path)
+                  candidate = (README.parent / decoded).resolve()
+                  root = Path.cwd().resolve()
+                  try:
+                      candidate.relative_to(root)
+                  except ValueError:
+                      failures.append(f"local path escapes repository: {target}")
+                      return
+                  if not candidate.exists():
+                      failures.append(f"missing local target: {target}")
+              if parsed.fragment:
+                  fragment = urllib.parse.unquote(parsed.fragment)
+                  if fragment and fragment not in anchors:
+                      failures.append(f"missing README anchor: #{fragment}")
+
+          def check_http(target: str) -> None:
+              parsed = urllib.parse.urlsplit(target)
+              host = (parsed.hostname or "").lower()
+
+              # Cross-repository GitHub links can legitimately require authentication
+              # unavailable to a per-repository GITHUB_TOKEN. Validate same-repository
+              # GitHub links and all non-GitHub public links; warn on auth/rate limits.
+              repo = os.environ.get("GITHUB_REPOSITORY", "")
+              if host == "github.com":
+                  parts = [p for p in parsed.path.split("/") if p]
+                  if len(parts) >= 2:
+                      linked_repo = f"{parts[0]}/{parts[1]}"
+                      if linked_repo.lower() != repo.lower():
+                          return
+
+              headers = {
+                  "User-Agent": "InfrastructureProductWorks-root-readme-link-check/1.0",
+                  "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
+              }
+              if host in {"api.github.com", "github.com"} and os.environ.get("GITHUB_TOKEN"):
+                  headers["Authorization"] = f"Bearer {os.environ['GITHUB_TOKEN']}"
+
+              def request(method: str):
+                  req = urllib.request.Request(target, headers=headers, method=method)
+                  return urllib.request.urlopen(req, timeout=12)
+
+              try:
+                  with request("HEAD") as response:
+                      status = response.getcode()
+                      if status in (404, 410):
+                          failures.append(f"broken HTTP link ({status}): {target}")
+              except urllib.error.HTTPError as exc:
+                  if exc.code in (404, 410):
+                      failures.append(f"broken HTTP link ({exc.code}): {target}")
+                  elif exc.code in (403, 405):
+                      try:
+                          with request("GET") as response:
+                              status = response.getcode()
+                              if status in (404, 410):
+                                  failures.append(f"broken HTTP link ({status}): {target}")
+                      except urllib.error.HTTPError as get_exc:
+                          if get_exc.code in (404, 410):
+                              failures.append(f"broken HTTP link ({get_exc.code}): {target}")
+                          else:
+                              warnings.append(f"HTTP {get_exc.code}, not treated as broken: {target}")
+                      except Exception as get_exc:
+                          warnings.append(f"GET probe failed, not treated as broken: {target} ({get_exc})")
+                  else:
+                      warnings.append(f"HTTP {exc.code}, not treated as broken: {target}")
+              except Exception as exc:
+                  warnings.append(f"HTTP probe failed, not treated as broken: {target} ({exc})")
+
+          checked = set()
+          for raw in targets:
+              target = clean_target(raw)
+              if not target or target in checked:
+                  continue
+              checked.add(target)
+
+              lower = target.lower()
+              if lower.startswith(("mailto:", "tel:", "data:", "javascript:")):
+                  continue
+              if target.startswith("#"):
+                  fragment = urllib.parse.unquote(target[1:])
+                  if fragment and fragment not in anchors:
+                      failures.append(f"missing README anchor: {target}")
+              elif lower.startswith(("http://", "https://")):
+                  check_http(target)
+              else:
+                  check_local(target)
+
+          for warning in warnings:
+              print(f"WARNING: {warning}")
+
+          if failures:
+              print("\nRoot README link integrity FAILED:")
+              for failure in failures:
+                  print(f" - {failure}")
+              sys.exit(1)
+
+          print(f"Root README link integrity passed: {len(checked)} unique targets checked.")
+          PY
