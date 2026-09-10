@@ -1,0 +1,66 @@
+name: Customer adoption evidence
+
+on:
+  pull_request:
+    paths:
+      - contracts/customer-adoption-evidence.schema.json
+      - docs/CUSTOMER-ADOPTION-EVIDENCE.md
+      - examples/customer-adoption-evidence.json
+      - scripts/validate_customer_adoption_evidence.py
+      - .github/workflows/customer-adoption-evidence.yml
+  push:
+    branches: [main]
+    paths:
+      - contracts/customer-adoption-evidence.schema.json
+      - docs/CUSTOMER-ADOPTION-EVIDENCE.md
+      - examples/customer-adoption-evidence.json
+      - scripts/validate_customer_adoption_evidence.py
+      - .github/workflows/customer-adoption-evidence.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate-adoption-evidence:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Validate accepted synthetic adoption evidence
+        run: python3 scripts/validate_customer_adoption_evidence.py examples/customer-adoption-evidence.json
+      - name: Prove blocked candidates cannot be recorded as adopted
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from scripts.validate_customer_adoption_evidence import EvidenceError, validate
+          value = json.loads(Path('examples/customer-adoption-evidence.json').read_text())
+          value['candidate']['compatibility'] = 'BLOCKED'
+          try:
+              validate(value)
+          except EvidenceError:
+              raise SystemExit(0)
+          raise SystemExit('validator accepted BLOCKED adoption candidate')
+          PY
+      - name: Prove verification and rollback substitution fail closed
+        run: |
+          python3 - <<'PY'
+          import copy, json
+          from pathlib import Path
+          from scripts.validate_customer_adoption_evidence import EvidenceError, validate
+          base = json.loads(Path('examples/customer-adoption-evidence.json').read_text())
+          cases = []
+          bad = copy.deepcopy(base); bad['verification']['verifiedDigest'] = 'sha256:' + '9' * 64; cases.append(bad)
+          bad = copy.deepcopy(base); bad['rollback']['digest'] = 'sha256:' + '8' * 64; cases.append(bad)
+          bad = copy.deepcopy(base); bad['evidenceAuthority'] = True; cases.append(bad)
+          for value in cases:
+              try:
+                  validate(value)
+              except EvidenceError:
+                  continue
+              raise SystemExit('validator accepted substituted adoption evidence')
+          PY
