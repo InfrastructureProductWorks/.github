@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://infrastructureproductworks.github.io/contracts/customer-adoption-evidence.schema.json",
+  "title": "InfrastructureProductWorks Customer Adoption Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "product",
+    "surface",
+    "priorSelection",
+    "adoptedSelection",
+    "candidate",
+    "customerAuthorization",
+    "verification",
+    "rollback",
+    "evidenceAuthority"
+  ],
+  "properties": {
+    "schemaVersion": {"const": "iaap-customer-adoption-evidence/v1"},
+    "product": {
+      "enum": ["iaap-guard", "iaap-forge", "iaap-console", "iaap-storefront", "iaap-assurance"]
+    },
+    "surface": {"type": "string", "minLength": 1, "maxLength": 128},
+    "priorSelection": {"$ref": "#/$defs/selection"},
+    "adoptedSelection": {"$ref": "#/$defs/selection"},
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "digest", "documentationRef", "documentationRevision", "compatibility", "authorityChange"],
+      "properties": {
+        "version": {"$ref": "#/$defs/version"},
+        "digest": {"$ref": "#/$defs/digest"},
+        "documentationRef": {"type": "string", "minLength": 1, "maxLength": 512},
+        "documentationRevision": {"$ref": "#/$defs/digest"},
+        "compatibility": {"enum": ["COMPATIBLE", "REVIEW_REQUIRED"]},
+        "authorityChange": {"type": "boolean"}
+      }
+    },
+    "customerAuthorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recorded", "method", "reference"],
+      "properties": {
+        "recorded": {"const": true},
+        "method": {"const": "CUSTOMER_CONTROLLED_CHANGE"},
+        "reference": {"type": "string", "minLength": 1, "maxLength": 512}
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "verifiedVersion", "verifiedDigest", "checks"],
+      "properties": {
+        "status": {"const": "PASS"},
+        "verifiedVersion": {"$ref": "#/$defs/version"},
+        "verifiedDigest": {"$ref": "#/$defs/digest"},
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1, "maxLength": 128}
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["retained", "version", "digest"],
+      "properties": {
+        "retained": {"const": true},
+        "version": {"$ref": "#/$defs/version"},
+        "digest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "evidenceAuthority": {"const": false}
+  },
+  "$defs": {
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "digest"],
+      "properties": {
+        "version": {"$ref": "#/$defs/version"},
+        "digest": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})\\.(0|[1-9][0-9]{0,8})$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

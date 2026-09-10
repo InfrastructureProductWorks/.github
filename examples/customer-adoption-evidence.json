@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "iaap-customer-adoption-evidence/v1",
+  "product": "iaap-storefront",
+  "surface": "backstage-template-distribution",
+  "priorSelection": {
+    "version": "0.1.0",
+    "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "adoptedSelection": {
+    "version": "0.1.1",
+    "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "candidate": {
+    "version": "0.1.1",
+    "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "documentationRef": "docs/releases/storefront-distribution-0.1.1.md",
+    "documentationRevision": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+    "compatibility": "COMPATIBLE",
+    "authorityChange": false
+  },
+  "customerAuthorization": {
+    "recorded": true,
+    "method": "CUSTOMER_CONTROLLED_CHANGE",
+    "reference": "synthetic-change-record/001"
+  },
+  "verification": {
+    "status": "PASS",
+    "verifiedVersion": "0.1.1",
+    "verifiedDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "checks": [
+      "artifact-digest",
+      "documentation-reviewed",
+      "runtime-or-package-verification",
+      "authority-boundary"
+    ]
+  },
+  "rollback": {
+    "retained": true,
+    "version": "0.1.0",
+    "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "evidenceAuthority": false
+}
