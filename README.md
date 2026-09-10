@@ -9,3 +9,5 @@ The rendered organization front door is maintained in [`profile/README.md`](prof
 For the public architecture, thesis, governance model, and portfolio evidence, start with [AI-Powered Infrastructure-as-a-Product](https://github.com/InfrastructureProductWorks/ai-powered-infrastructure-as-a-product).
 
 Customer-impacting product changes follow the [Documentation-First Customer Update Policy](docs/CUSTOMER-UPDATE-POLICY.md): documentation precedes candidate distribution, compatibility validation, customer review, customer-authorized adoption, and verification.
+
+Verified customer adoption can be recorded with the common [Customer Adoption Evidence](docs/CUSTOMER-ADOPTION-EVIDENCE.md) contract, which binds prior selection, documented candidate, customer-controlled authorization, exact adopted version/digest, post-adoption verification, and retained rollback identity without granting adoption authority.
