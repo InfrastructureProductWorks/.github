@@ -47,13 +47,13 @@ jobs:
           from pathlib import Path
 
           stages = ['Define', 'Build', 'Validate', 'Integrate', 'Operationalize']
+          statuses = ['DEFINING', 'BUILDING', 'VALIDATING', 'INTEGRATING', 'OPERATIONALIZING']
           allowed_top = {
               'schemaVersion', 'id', 'name', 'role', 'siteHref', 'repository',
               'posture', 'versions', 'maturity', 'evidence', 'nextMilestone',
               'authorityNotice'
           }
           allowed_maturity = {'stageIndex', 'stage', 'status', 'state'}
-          allowed_status = {'DEFINING', 'BUILDING', 'VALIDATING', 'INTEGRATING', 'OPERATIONALIZING'}
           path = Path(os.environ['STATUS_PATH'])
           errors = []
 
@@ -78,8 +78,14 @@ jobs:
               errors.append('posture must remain CONTINUE_VALIDATION')
 
           href = data.get('siteHref')
-          if not isinstance(href, str) or not href.startswith('/') or href.startswith('//'):
-              errors.append('siteHref must be a safe site-relative path with one leading slash')
+          if (
+              not isinstance(href, str)
+              or not href.startswith('/')
+              or href.startswith('//')
+              or '\\' in href
+              or any(ch in href for ch in ('\r', '\n', '\t'))
+          ):
+              errors.append('siteHref must be a safe site-relative path with one leading slash and no backslashes/control whitespace')
 
           for key in ('name', 'role', 'evidence', 'nextMilestone', 'authorityNotice'):
               value = data.get(key)
@@ -111,10 +117,11 @@ jobs:
               idx = maturity.get('stageIndex')
               if type(idx) is not int or idx < 1 or idx > len(stages):
                   errors.append('stageIndex must be an integer from 1 through 5')
-              elif maturity.get('stage') != stages[idx - 1]:
-                  errors.append('stage must match stageIndex')
-              if maturity.get('status') not in allowed_status:
-                  errors.append('maturity.status is not an allowed status')
+              else:
+                  if maturity.get('stage') != stages[idx - 1]:
+                      errors.append('stage must match stageIndex')
+                  if maturity.get('status') != statuses[idx - 1]:
+                      errors.append('maturity.status must correspond to stageIndex')
               state = maturity.get('state')
               if not isinstance(state, str) or not state.strip():
                   errors.append('maturity.state must be non-empty text')
