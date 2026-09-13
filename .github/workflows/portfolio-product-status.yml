@@ -1,0 +1,130 @@
+name: Portfolio Product Status
+
+on:
+  workflow_call:
+    inputs:
+      expected_id:
+        description: Product id expected in .portfolio/status.json
+        required: true
+        type: string
+      expected_repository:
+        description: owner/repository expected in the contract
+        required: true
+        type: string
+      expected_versions_json:
+        description: Exact JSON object of published version surfaces
+        required: false
+        default: '{}'
+        type: string
+      status_path:
+        description: Repository-relative status contract path
+        required: false
+        default: '.portfolio/status.json'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate product-owned portfolio status contract
+        env:
+          STATUS_PATH: ${{ inputs.status_path }}
+          EXPECTED_ID: ${{ inputs.expected_id }}
+          EXPECTED_REPOSITORY: ${{ inputs.expected_repository }}
+          EXPECTED_VERSIONS_JSON: ${{ inputs.expected_versions_json }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          stages = ['Define', 'Build', 'Validate', 'Integrate', 'Operationalize']
+          allowed_top = {
+              'schemaVersion', 'id', 'name', 'role', 'siteHref', 'repository',
+              'posture', 'versions', 'maturity', 'evidence', 'nextMilestone',
+              'authorityNotice'
+          }
+          allowed_maturity = {'stageIndex', 'stage', 'status', 'state'}
+          allowed_status = {'DEFINING', 'BUILDING', 'VALIDATING', 'INTEGRATING', 'OPERATIONALIZING'}
+          path = Path(os.environ['STATUS_PATH'])
+          errors = []
+
+          try:
+              data = json.loads(path.read_text(encoding='utf-8'))
+          except FileNotFoundError:
+              print(f'missing {path}', file=sys.stderr)
+              sys.exit(1)
+          except json.JSONDecodeError as exc:
+              print(f'invalid JSON in {path}: {exc}', file=sys.stderr)
+              sys.exit(1)
+
+          if set(data) - allowed_top:
+              errors.append(f'unknown top-level keys: {sorted(set(data) - allowed_top)}')
+          if data.get('schemaVersion') != 'portfolio-product-status/v1':
+              errors.append('schemaVersion must be portfolio-product-status/v1')
+          if data.get('id') != os.environ['EXPECTED_ID']:
+              errors.append('id does not match expected product id')
+          if data.get('repository') != os.environ['EXPECTED_REPOSITORY']:
+              errors.append('repository does not match expected repository')
+          if data.get('posture') != 'CONTINUE_VALIDATION':
+              errors.append('posture must remain CONTINUE_VALIDATION')
+
+          href = data.get('siteHref')
+          if not isinstance(href, str) or not href.startswith('/') or href.startswith('//'):
+              errors.append('siteHref must be a safe site-relative path with one leading slash')
+
+          for key in ('name', 'role', 'evidence', 'nextMilestone', 'authorityNotice'):
+              value = data.get(key)
+              if not isinstance(value, str) or not value.strip():
+                  errors.append(f'{key} must be non-empty text')
+
+          versions = data.get('versions')
+          if not isinstance(versions, dict):
+              errors.append('versions must be an object')
+          else:
+              for key, value in versions.items():
+                  if not isinstance(key, str) or not key or not isinstance(value, str) or not value.strip():
+                      errors.append('versions keys and values must be non-empty strings')
+                      break
+              try:
+                  expected_versions = json.loads(os.environ['EXPECTED_VERSIONS_JSON'])
+              except json.JSONDecodeError as exc:
+                  errors.append(f'workflow expected_versions_json is invalid JSON: {exc}')
+              else:
+                  if versions != expected_versions:
+                      errors.append(f'versions mismatch: expected {expected_versions!r}, got {versions!r}')
+
+          maturity = data.get('maturity')
+          if not isinstance(maturity, dict):
+              errors.append('maturity must be an object')
+          else:
+              if set(maturity) != allowed_maturity:
+                  errors.append(f'maturity keys must be exactly {sorted(allowed_maturity)}')
+              idx = maturity.get('stageIndex')
+              if type(idx) is not int or idx < 1 or idx > len(stages):
+                  errors.append('stageIndex must be an integer from 1 through 5')
+              elif maturity.get('stage') != stages[idx - 1]:
+                  errors.append('stage must match stageIndex')
+              if maturity.get('status') not in allowed_status:
+                  errors.append('maturity.status is not an allowed status')
+              state = maturity.get('state')
+              if not isinstance(state, str) or not state.strip():
+                  errors.append('maturity.state must be non-empty text')
+
+          if errors:
+              print('portfolio product status validation failed:', file=sys.stderr)
+              for error in errors:
+                  print(f'- {error}', file=sys.stderr)
+              sys.exit(1)
+
+          print('portfolio product status validation passed')
+          print(json.dumps({'id': data['id'], 'repository': data['repository'], 'versions': data['versions']}, sort_keys=True))
+          PY
